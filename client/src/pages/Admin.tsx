@@ -200,7 +200,7 @@ export default function Admin() {
                       <FormItem>
                         <FormLabel>Location</FormLabel>
                         <FormControl>
-                          <Input placeholder="e.g. Bangalore" {...field} />
+                          <Input placeholder="e.g. Bangalore" {...field} value={field.value ?? ""} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
