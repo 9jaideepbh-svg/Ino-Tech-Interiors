@@ -1,14 +1,24 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useProjects } from "@/hooks/use-projects";
 import { ProjectCard } from "@/components/ProjectCard";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { categories } from "@shared/schema";
 import { Loader2 } from "lucide-react";
+import { useLocation } from "wouter";
 
 export default function Projects() {
   const { data: projects, isLoading } = useProjects();
+  const [location] = useLocation();
   const [activeCategory, setActiveCategory] = useState<string>("All");
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const categoryParam = params.get("category");
+    if (categoryParam && (categoryParam === "All" || categories.includes(categoryParam as any))) {
+      setActiveCategory(categoryParam);
+    }
+  }, [location]);
 
   const filteredProjects = activeCategory === "All" 
     ? projects 

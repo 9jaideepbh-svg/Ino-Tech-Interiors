@@ -33,11 +33,11 @@ export default function Home() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative h-screen min-h-[600px] flex items-center overflow-hidden bg-tertiary">
+      <section className="relative h-screen min-h-[600px] flex items-center overflow-hidden">
         {/* Abstract Background Animation - Represents 3D/Glass */}
         <div className="absolute inset-0 z-0">
-          <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center opacity-20 mix-blend-overlay"></div>
-          <div className="absolute inset-0 bg-gradient-to-r from-tertiary via-tertiary/90 to-tertiary/60"></div>
+          <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center opacity-50"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-tertiary/60 via-tertiary/40 to-transparent"></div>
           
           {/* Animated Glass Shapes */}
           <motion.div 
@@ -221,22 +221,23 @@ export default function Home() {
               "Semi-Unitized Glazing",
               "Spider Glazing System"
             ].map((service, idx) => (
-              <motion.div
-                key={idx}
-                whileHover={{ y: -10 }}
-                className="bg-white/5 backdrop-blur-sm border border-white/10 p-8 rounded-2xl hover:bg-white/10 transition-colors group cursor-pointer"
-              >
-                <div className="w-12 h-12 bg-secondary rounded-lg mb-6 flex items-center justify-center text-primary font-bold text-xl group-hover:scale-110 transition-transform">
-                  {idx + 1}
-                </div>
-                <h3 className="text-xl font-bold mb-3 text-white">{service}</h3>
-                <p className="text-white/60 text-sm mb-4">
-                  Premium quality installation and maintenance with cutting-edge technology.
-                </p>
-                <div className="flex items-center text-secondary text-sm font-bold uppercase tracking-wider group-hover:gap-2 transition-all">
-                  Learn More <ChevronRight className="w-4 h-4 ml-1" />
-                </div>
-              </motion.div>
+              <Link key={idx} href={`/projects?category=${encodeURIComponent(service)}`}>
+                <motion.div
+                  whileHover={{ y: -10 }}
+                  className="bg-white/5 backdrop-blur-sm border border-white/10 p-8 rounded-2xl hover:bg-white/10 transition-colors group cursor-pointer h-full"
+                >
+                  <div className="w-12 h-12 bg-secondary rounded-lg mb-6 flex items-center justify-center text-primary font-bold text-xl group-hover:scale-110 transition-transform">
+                    {idx + 1}
+                  </div>
+                  <h3 className="text-xl font-bold mb-3 text-white">{service}</h3>
+                  <p className="text-white/60 text-sm mb-4">
+                    Premium quality installation and maintenance with cutting-edge technology.
+                  </p>
+                  <div className="flex items-center text-secondary text-sm font-bold uppercase tracking-wider group-hover:gap-2 transition-all">
+                    View Gallery <ChevronRight className="w-4 h-4 ml-1" />
+                  </div>
+                </motion.div>
+              </Link>
             ))}
           </div>
         </div>
