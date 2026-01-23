@@ -26,12 +26,8 @@ export async function registerRoutes(
     res.json(project);
   });
 
-  app.post(api.projects.create.path, async (req, res) => {
+  app.post(api.projects.create.path, isAuthenticated, async (req, res) => {
     try {
-      // Basic auth check for admin operations (if needed in future, currently open for simplicity/demo or assumes protected by frontend routing for now, 
-      // but ideally we'd check req.isAuthenticated() here)
-      // For now, we'll allow it to seed data easily.
-      
       const input = api.projects.create.input.parse(req.body);
       const project = await storage.createProject(input);
       res.status(201).json(project);
@@ -44,7 +40,7 @@ export async function registerRoutes(
     }
   });
 
-  app.put(api.projects.update.path, async (req, res) => {
+  app.put(api.projects.update.path, isAuthenticated, async (req, res) => {
     try {
       const input = api.projects.update.input.parse(req.body);
       const project = await storage.updateProject(Number(req.params.id), input);
@@ -61,7 +57,7 @@ export async function registerRoutes(
     }
   });
 
-  app.delete(api.projects.delete.path, async (req, res) => {
+  app.delete(api.projects.delete.path, isAuthenticated, async (req, res) => {
     await storage.deleteProject(Number(req.params.id));
     res.status(204).send();
   });

@@ -16,6 +16,7 @@ import Projects from "@/pages/Projects";
 import ProjectDetail from "@/pages/ProjectDetail";
 import Contact from "@/pages/Contact";
 import About from "@/pages/About";
+import Admin from "@/pages/Admin";
 
 // Scroll to top on route change
 function ScrollToTop() {
@@ -39,6 +40,7 @@ function Router() {
           <Route path="/projects/:id" component={ProjectDetail} />
           <Route path="/contact" component={Contact} />
           <Route path="/services" component={Home} /> {/* Reuse Home for now as services are there */}
+          <Route path="/admin" component={Admin} />
           <Route component={NotFound} />
         </Switch>
       </main>

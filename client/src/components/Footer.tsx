@@ -41,6 +41,7 @@ export function Footer() {
                 { label: "Projects", href: "/projects" },
                 { label: "Services", href: "/services" },
                 { label: "Contact", href: "/contact" },
+                { label: "Admin Login", href: "/admin" },
               ].map((link) => (
                 <li key={link.href}>
                   <Link href={link.href} className="text-[#FFE6A7]/70 hover:text-[#BB9457] transition-colors hover:translate-x-1 inline-block">
