@@ -46,3 +46,5 @@ integrations = ["javascript_log_in_with_replit:2.0.0"]
 [userenv.shared]
 SUPABASE_URL = "https://vqfmqtlbefquqvtpmczw.supabase.co"
 SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZxZm1xdGxiZWZxdXF2dHBtY3p3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkzNDgxOTUsImV4cCI6MjA4NDkyNDE5NX0.XTukP5tOuS-C9qcGyGzszwQvve-SW06ThvGvVzGtFvY"
+VITE_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZxZm1xdGxiZWZxdXF2dHBtY3p3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkzNDgxOTUsImV4cCI6MjA4NDkyNDE5NX0.XTukP5tOuS-C9qcGyGzszwQvve-SW06ThvGvVzGtFvY"
+VITE_SUPABASE_URL = "https://vqfmqtlbefquqvtpmczw.supabase.co"
