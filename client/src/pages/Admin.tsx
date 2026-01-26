@@ -1,297 +1,284 @@
-import { useState } from "react";
-import { useProjects } from "@/hooks/use-projects";
-import { ProjectCard } from "@/components/ProjectCard";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { useState, useEffect } from "react";
+import { supabase } from "@/lib/supabase";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { insertProjectSchema, type Project, type InsertProject, categories } from "@shared/schema";
-import { useAuth } from "@/hooks/use-auth";
-import { apiRequest, queryClient } from "@/lib/queryClient";
-import { useMutation } from "@tanstack/react-query";
-import { useToast } from "@/hooks/use-toast";
-import { Loader2, Plus, Trash2, Edit2, LogIn } from "lucide-react";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
+import { z } from "zod";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
+import { Loader2, LogOut, Upload, Trash2 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+
+const loginSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(6),
+});
+
+const projectSchema = z.object({
+  category: z.enum(["structural", "acp", "semi_unitized", "spider"]),
+});
 
 export default function Admin() {
-  const { user, isLoading: isAuthLoading } = useAuth();
-  const { data: projects, isLoading: isProjectsLoading } = useProjects();
+  const [session, setSession] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
+  const [projects, setProjects] = useState<any[]>([]);
   const { toast } = useToast();
-  const [editingProject, setEditingProject] = useState<Project | null>(null);
 
-  const form = useForm<InsertProject>({
-    resolver: zodResolver(insertProjectSchema),
-    defaultValues: {
-      title: "",
-      description: "",
-      category: categories[0],
-      imageUrl: "",
-      featured: false,
-      location: "",
-    },
-  });
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setLoading(false);
+      if (session) fetchProjects();
+    });
 
-  const createMutation = useMutation({
-    mutationFn: async (data: InsertProject) => {
-      const res = await apiRequest("POST", "/api/projects", data);
-      return res.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
-      toast({ title: "Success", description: "Project created successfully" });
-      form.reset();
-    },
-  });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+      if (session) fetchProjects();
+    });
 
-  const updateMutation = useMutation({
-    mutationFn: async (data: { id: number; project: Partial<InsertProject> }) => {
-      const res = await apiRequest("PUT", `/api/projects/${data.id}`, data.project);
-      return res.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
-      toast({ title: "Success", description: "Project updated successfully" });
-      setEditingProject(null);
-      form.reset();
-    },
-  });
+    return () => subscription.unsubscribe();
+  }, []);
 
-  const deleteMutation = useMutation({
-    mutationFn: async (id: number) => {
-      await apiRequest("DELETE", `/api/projects/${id}`);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
-      toast({ title: "Success", description: "Project deleted successfully" });
-    },
-  });
-
-  function onSubmit(data: InsertProject) {
-    if (editingProject) {
-      updateMutation.mutate({ id: editingProject.id, project: data });
+  async function fetchProjects() {
+    const { data, error } = await supabase
+      .from('project_images')
+      .select('*')
+      .order('created_at', { ascending: false });
+    
+    if (error) {
+      toast({ variant: "destructive", title: "Error fetching projects", description: error.message });
     } else {
-      createMutation.mutate(data);
+      setProjects(data || []);
     }
   }
 
-  function startEdit(project: Project) {
-    setEditingProject(project);
-    form.reset({
-      title: project.title,
-      description: project.description,
-      category: project.category,
-      imageUrl: project.imageUrl,
-      featured: project.featured,
-      location: project.location || "",
-    });
+  const loginForm = useForm<z.infer<typeof loginSchema>>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: { email: "", password: "" },
+  });
+
+  const projectForm = useForm<z.infer<typeof projectSchema>>({
+    resolver: zodResolver(projectSchema),
+    defaultValues: { category: "structural" },
+  });
+
+  async function onLogin(data: z.infer<typeof loginSchema>) {
+    setLoading(true);
+    const { error } = await supabase.auth.signInWithPassword(data);
+    if (error) {
+      toast({ variant: "destructive", title: "Login failed", description: error.message });
+    }
+    setLoading(false);
   }
 
-  if (isAuthLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="w-8 h-8 animate-spin" />
-      </div>
-    );
+  async function handleLogout() {
+    await supabase.auth.signOut();
   }
 
-  if (!user) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen p-4">
-        <Card className="w-full max-w-md">
-          <CardHeader>
-            <CardTitle className="text-2xl text-center">Admin Access</CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-4">
-            <p className="text-center text-muted-foreground">
-              Only authorized administrators can manage project images.
-            </p>
-            <Button className="w-full gap-2" onClick={() => window.location.href = "/api/login"}>
-              <LogIn className="w-4 h-4" /> Admin Login
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
+  async function onUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    try {
+      setUploading(true);
+      if (!e.target.files || e.target.files.length === 0) return;
+      
+      const file = e.target.files[0];
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random()}.${fileExt}`;
+      const filePath = `projects/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('project-images')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('project-images')
+        .getPublicUrl(filePath);
+
+      const category = projectForm.getValues("category");
+
+      const { error: dbError } = await supabase
+        .from('project_images')
+        .insert([{ image_url: publicUrl, category }]);
+
+      if (dbError) throw dbError;
+
+      toast({ title: "Success", description: "Image uploaded successfully" });
+      fetchProjects();
+    } catch (error: any) {
+      toast({ variant: "destructive", title: "Upload failed", description: error.message });
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  async function deleteProject(id: number, imageUrl: string) {
+    try {
+      const path = imageUrl.split('project-images/').pop();
+      if (path) {
+        await supabase.storage.from('project-images').remove([path]);
+      }
+      const { error } = await supabase.from('project_images').delete().eq('id', id);
+      if (error) throw error;
+      toast({ title: "Deleted", description: "Project removed" });
+      fetchProjects();
+    } catch (error: any) {
+      toast({ variant: "destructive", title: "Delete failed", description: error.message });
+    }
+  }
+
+  if (loading) {
+    return <div className="flex h-screen items-center justify-center"><Loader2 className="animate-spin" /></div>;
   }
 
   return (
-    <div className="container mx-auto py-24 px-4">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-        {/* Form Column */}
-        <div>
-          <Card>
-            <CardHeader>
-              <CardTitle>{editingProject ? "Edit Project" : "Add New Project"}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                  <FormField
-                    control={form.control}
-                    name="title"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Project Title</FormLabel>
-                        <FormControl>
-                          <Input placeholder="e.g. HAL Facility" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="category"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Category</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select a category" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {categories.map((cat) => (
-                              <SelectItem key={cat} value={cat}>
-                                {cat}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="imageUrl"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Image URL</FormLabel>
-                        <FormControl>
-                          <Input placeholder="https://images.unsplash.com/..." {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="location"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Location</FormLabel>
-                        <FormControl>
-                          <Input placeholder="e.g. Bangalore" {...field} value={field.value ?? ""} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="description"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Description</FormLabel>
-                        <FormControl>
-                          <Textarea placeholder="Project details..." {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="featured"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                        <FormControl>
-                          <Checkbox
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
-                        </FormControl>
-                        <div className="space-y-1 leading-none">
-                          <FormLabel>Featured Project</FormLabel>
-                        </div>
-                      </FormItem>
-                    )}
-                  />
-                  <div className="flex gap-2">
-                    <Button type="submit" className="w-full" disabled={createMutation.isPending || updateMutation.isPending}>
-                      {(createMutation.isPending || updateMutation.isPending) && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                      {editingProject ? "Update Project" : "Add Project"}
+    <div className="min-h-screen bg-neutral-950 text-white p-6 pt-24">
+      <AnimatePresence mode="wait">
+        {!session ? (
+          <motion.div 
+            key="login"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="flex justify-center"
+          >
+            <Card className="w-full max-w-md bg-neutral-900 border-neutral-800 text-white">
+              <CardHeader>
+                <CardTitle className="text-2xl font-display text-center">Admin Access</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Form {...loginForm}>
+                  <form onSubmit={loginForm.handleSubmit(onLogin)} className="space-y-4">
+                    <FormField
+                      control={loginForm.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Email</FormLabel>
+                          <FormControl><Input className="bg-neutral-800 border-neutral-700" {...field} /></FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={loginForm.control}
+                      name="password"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Password</FormLabel>
+                          <FormControl><Input type="password" className="bg-neutral-800 border-neutral-700" {...field} /></FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <Button type="submit" className="w-full bg-secondary hover:bg-secondary/90 text-primary font-bold">
+                      Login
                     </Button>
-                    {editingProject && (
-                      <Button variant="outline" type="button" onClick={() => {
-                        setEditingProject(null);
-                        form.reset();
-                      }}>
-                        Cancel
-                      </Button>
-                    )}
-                  </div>
-                </form>
-              </Form>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* List Column */}
-        <div className="space-y-4">
-          <h2 className="text-2xl font-bold">Existing Projects</h2>
-          {isProjectsLoading ? (
-            <div className="flex justify-center p-8">
-              <Loader2 className="w-8 h-8 animate-spin" />
+                  </form>
+                </Form>
+              </CardContent>
+            </Card>
+          </motion.div>
+        ) : (
+          <motion.div 
+            key="dashboard"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="max-w-6xl mx-auto space-y-8"
+          >
+            <div className="flex justify-between items-center border-b border-neutral-800 pb-4">
+              <h1 className="text-3xl font-display font-bold text-secondary">Admin Dashboard</h1>
+              <Button variant="ghost" onClick={handleLogout} className="text-neutral-400 hover:text-white">
+                <LogOut className="mr-2 h-4 w-4" /> Logout
+              </Button>
             </div>
-          ) : (
-            <div className="grid gap-4">
-              {projects?.map((project) => (
-                <Card key={project.id} className="overflow-hidden">
-                  <div className="flex gap-4 p-4">
-                    <img src={project.imageUrl} alt={project.title} className="w-24 h-24 object-cover rounded-md" />
-                    <div className="flex-grow">
-                      <h3 className="font-bold">{project.title}</h3>
-                      <p className="text-sm text-muted-foreground">{project.category}</p>
-                      <div className="flex gap-2 mt-2">
-                        <Button size="sm" variant="outline" onClick={() => startEdit(project)}>
-                          <Edit2 className="w-3 h-3 mr-1" /> Edit
-                        </Button>
-                        <Button size="sm" variant="destructive" onClick={() => {
-                          if (confirm("Are you sure you want to delete this project?")) {
-                            deleteMutation.mutate(project.id);
-                          }
-                        }}>
-                          <Trash2 className="w-3 h-3 mr-1" /> Delete
-                        </Button>
-                      </div>
+
+            <Card className="bg-neutral-900 border-neutral-800 text-white">
+              <CardHeader>
+                <CardTitle>Upload New Project</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <Form {...projectForm}>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-end">
+                    <FormField
+                      control={projectForm.control}
+                      name="category"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Category</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger className="bg-neutral-800 border-neutral-700">
+                                <SelectValue />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent className="bg-neutral-800 border-neutral-700 text-white">
+                              <SelectItem value="structural">Structural Glazing</SelectItem>
+                              <SelectItem value="acp">ACP Cladding</SelectItem>
+                              <SelectItem value="semi_unitized">Semi Unitized</SelectItem>
+                              <SelectItem value="spider">Spider Glazing</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <div className="relative">
+                      <Input
+                        type="file"
+                        accept="image/*"
+                        onChange={onUpload}
+                        disabled={uploading}
+                        className="hidden"
+                        id="image-upload"
+                      />
+                      <label 
+                        htmlFor="image-upload"
+                        className="flex items-center justify-center w-full h-10 px-4 py-2 bg-secondary text-primary font-bold rounded-md cursor-pointer hover:bg-secondary/90 transition-colors"
+                      >
+                        {uploading ? <Loader2 className="animate-spin mr-2" /> : <Upload className="mr-2 h-4 w-4" />}
+                        {uploading ? "Uploading..." : "Choose & Upload Image"}
+                      </label>
                     </div>
                   </div>
-                </Card>
-              ))}
+                </Form>
+              </CardContent>
+            </Card>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              <AnimatePresence>
+                {projects.map((p) => (
+                  <motion.div
+                    key={p.id}
+                    layout
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.9 }}
+                    className="group relative aspect-video rounded-xl overflow-hidden border border-neutral-800 bg-neutral-900"
+                  >
+                    <img src={p.image_url} alt="" className="w-full h-full object-cover transition-transform group-hover:scale-105" />
+                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-center items-center gap-2">
+                      <span className="text-secondary font-bold uppercase text-xs tracking-widest">{p.category}</span>
+                      <Button 
+                        variant="destructive" 
+                        size="icon" 
+                        onClick={() => deleteProject(p.id, p.image_url)}
+                        className="rounded-full"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
             </div>
-          )}
-        </div>
-      </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
