@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { ProjectCard } from "@/components/ProjectCard";
 import { useProjects } from "@/hooks/use-projects";
+import heroVideo from "@assets/133077-755975090_medium_1770457772693.mp4";
 
 export default function Home() {
   const { data: projects, isLoading } = useProjects();
@@ -32,14 +33,24 @@ export default function Home() {
 
   return (
     <div className="min-h-screen">
-      {/* Hero Section */}
+      {/* Hero Section with Cinematic 3D Video Wash */}
       <section className="relative h-screen min-h-[600px] flex items-center overflow-hidden">
-        {/* Abstract Background Animation - Represents 3D/Glass */}
+        {/* Cinematic Video Background with 3D Wash */}
         <div className="absolute inset-0 z-0">
-          <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center opacity-50"></div>
-          <div className="absolute inset-0 bg-gradient-to-r from-tertiary/60 via-tertiary/40 to-transparent"></div>
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="absolute top-1/2 left-1/2 min-w-full min-h-full -translate-x-1/2 -translate-y-1/2 object-cover"
+          >
+            <source src={heroVideo} type="video/mp4" />
+          </video>
+          {/* 3D Wash: Dark gradient with subtle blur for depth */}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/40 to-black/80 backdrop-blur-[1px]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.4)_100%)]" />
           
-          {/* Animated Glass Shapes */}
+          {/* Animated Glass Shapes for 3D depth effect */}
           <motion.div 
             animate={{ 
               y: [0, -20, 0], 
@@ -49,15 +60,6 @@ export default function Home() {
             transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
             className="absolute top-1/4 right-[10%] w-64 h-64 border border-white/10 bg-white/5 backdrop-blur-sm rounded-2xl transform rotate-12 hidden md:block"
           />
-          <motion.div 
-            animate={{ 
-              y: [0, 30, 0], 
-              rotate: [0, -10, 0],
-              opacity: [0.2, 0.4, 0.2]
-            }}
-            transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-            className="absolute bottom-1/4 right-[20%] w-48 h-48 border border-secondary/20 bg-secondary/10 backdrop-blur-md rounded-full hidden md:block"
-          />
         </div>
 
         <div className="container mx-auto px-4 relative z-10 pt-20">
@@ -65,27 +67,27 @@ export default function Home() {
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
+              transition={{ duration: 1, ease: "easeOut" }}
             >
               <h2 className="text-secondary font-bold tracking-wider uppercase mb-4 flex items-center gap-2">
                 <span className="w-8 h-0.5 bg-secondary inline-block"></span>
                 Since 2004
               </h2>
-              <h1 className="text-5xl md:text-7xl font-display font-bold text-white mb-6 leading-tight">
+              <h1 className="text-5xl md:text-7xl font-display font-bold text-white mb-6 leading-tight drop-shadow-2xl">
                 Shaping Skylines with <span className="text-transparent bg-clip-text bg-gradient-to-r from-secondary to-accent">Precision</span>
               </h1>
-              <p className="text-xl text-white/80 mb-8 leading-relaxed max-w-2xl">
+              <p className="text-xl text-white/80 mb-8 leading-relaxed max-w-2xl drop-shadow-lg">
                 20+ Years of Excellence in Structural Glazing, ACP Cladding, and Modern Facade Solutions. We bring architectural visions to life.
               </p>
               
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link href="/projects">
-                  <Button size="lg" className="bg-secondary hover:bg-secondary/90 text-tertiary font-bold text-lg px-8 py-6 rounded-full shadow-lg hover:shadow-secondary/20 transition-all">
+                  <Button size="lg" className="bg-secondary hover:bg-secondary/90 text-tertiary font-bold text-lg px-8 py-6 rounded-full shadow-lg hover:shadow-secondary/20 transition-all hover:scale-105 active:scale-95">
                     View Our Projects
                   </Button>
                 </Link>
                 <Link href="/contact">
-                  <Button size="lg" variant="outline" className="border-white/30 text-white hover:bg-white/10 hover:text-white font-medium text-lg px-8 py-6 rounded-full backdrop-blur-sm">
+                  <Button size="lg" variant="outline" className="border-white/30 text-white hover:bg-white/10 hover:text-white font-medium text-lg px-8 py-6 rounded-full backdrop-blur-md transition-all hover:scale-105 active:scale-95">
                     Contact Us
                   </Button>
                 </Link>
@@ -93,6 +95,17 @@ export default function Home() {
             </motion.div>
           </div>
         </div>
+        
+        {/* Animated Scroll Indicator */}
+        <motion.div 
+          animate={{ y: [0, 10, 0] }}
+          transition={{ duration: 2, repeat: Infinity }}
+          className="absolute bottom-8 left-1/2 -translate-x-1/2 text-white/50"
+        >
+          <div className="w-[30px] h-[50px] border-2 border-white/30 rounded-full flex justify-center p-2">
+            <div className="w-1 h-2 bg-secondary rounded-full" />
+          </div>
+        </motion.div>
       </section>
 
       {/* About / Stats Section */}
