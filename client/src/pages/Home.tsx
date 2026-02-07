@@ -46,9 +46,9 @@ export default function Home() {
           >
             <source src={heroVideo} type="video/mp4" />
           </video>
-          {/* 3D Wash: Adjusted for better visibility and brightness */}
-          <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-black/60 backdrop-blur-[0.5px]" />
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.2)_100%)]" />
+          {/* Minimal 3D Wash for Maximum Brightness */}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/40 backdrop-blur-[0.2px]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.1)_100%)]" />
           
           {/* Animated Glass Shapes for 3D depth effect */}
           <motion.div 
