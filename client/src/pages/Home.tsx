@@ -6,14 +6,14 @@ import { ProjectCard } from "@/components/ProjectCard";
 import { useProjects } from "@/hooks/use-projects";
 import { useRef, useEffect, useState } from "react";
 import heroVideo from "@assets/133077-755975090_medium_1770457772693.mp4";
-import heroAudio from "@assets/The_Sevastopol-[AudioTrimmer.com]_1770715872124.mp3";
+import heroAudio from "@assets/The_Sevastopol-[AudioTrimmer.com]_(1)_1770717824098.mp3";
 
 export default function Home() {
   const { data: projects, isLoading } = useProjects();
   const videoRef = useRef<HTMLVideoElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
   const heroRef = useRef<HTMLDivElement>(null);
-  const [isMuted, setIsMuted] = useState(true);
+  const [isMuted, setIsMuted] = useState(false);
 
   const { scrollYProgress } = useScroll({
     target: heroRef,
@@ -25,6 +25,9 @@ export default function Home() {
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.muted = isMuted;
+      if (!isMuted && audioRef.current.paused) {
+        audioRef.current.play().catch(e => console.log("Autoplay blocked", e));
+      }
     }
   }, [isMuted]);
 
@@ -33,8 +36,8 @@ export default function Home() {
       if (audioRef.current) {
         if (v <= 0) {
           audioRef.current.pause();
-        } else if (!isMuted && videoRef.current && !videoRef.current.paused) {
-          audioRef.current.play();
+        } else if (!isMuted && !audioRef.current.playing) {
+          audioRef.current.play().catch(e => console.log("Scroll play blocked", e));
         }
       }
     });
@@ -42,28 +45,10 @@ export default function Home() {
   }, [audioVolume, isMuted]);
 
   useEffect(() => {
-    // Synchronize play/pause and looping
-    const video = videoRef.current;
-    
-    const onPlay = () => audioRef.current?.play();
-    const onPause = () => audioRef.current?.pause();
-    const onTimeUpdate = () => {
-      if (video && video.currentTime < 0.3) {
-        if (audioRef.current) audioRef.current.currentTime = video.currentTime;
-      }
-    };
-
-    if (video) {
-      video.addEventListener('play', onPlay);
-      video.addEventListener('pause', onPause);
-      video.addEventListener('timeupdate', onTimeUpdate);
+    // Basic play on mount if not muted
+    if (audioRef.current && !isMuted) {
+      audioRef.current.play().catch(e => console.log("Initial play blocked", e));
     }
-
-    return () => {
-      video?.removeEventListener('play', onPlay);
-      video?.removeEventListener('pause', onPause);
-      video?.removeEventListener('timeupdate', onTimeUpdate);
-    };
   }, []);
 
   // Filter for featured projects or just take the first few if none marked featured
