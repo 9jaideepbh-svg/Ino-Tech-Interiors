@@ -32,11 +32,11 @@ export default function Home() {
   }, [isMuted]);
 
   useEffect(() => {
-    const unsubscribe = audioVolume.onChange((v) => {
+    const unsubscribe = audioVolume.on("change", (v) => {
       if (audioRef.current) {
         if (v <= 0) {
           audioRef.current.pause();
-        } else if (!isMuted && !audioRef.current.playing) {
+        } else if (!isMuted && audioRef.current.paused) {
           audioRef.current.play().catch(e => console.log("Scroll play blocked", e));
         }
       }
