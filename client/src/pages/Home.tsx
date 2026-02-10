@@ -13,23 +13,28 @@ export default function Home() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
 
-  const handleLoop = () => {
-    if (audioRef.current) {
-      audioRef.current.currentTime = 0;
-      audioRef.current.play();
-    }
-  };
-
   useEffect(() => {
-    // Synchronize play/pause
+    // Synchronize play/pause and looping
     const video = videoRef.current;
+    
+    const onPlay = () => audioRef.current?.play();
+    const onPause = () => audioRef.current?.pause();
+    const onTimeUpdate = () => {
+      if (video && video.currentTime < 0.3) {
+        if (audioRef.current) audioRef.current.currentTime = video.currentTime;
+      }
+    };
+
     if (video) {
-      video.addEventListener('play', () => audioRef.current?.play());
-      video.addEventListener('pause', () => audioRef.current?.pause());
+      video.addEventListener('play', onPlay);
+      video.addEventListener('pause', onPause);
+      video.addEventListener('timeupdate', onTimeUpdate);
     }
+
     return () => {
-      video?.removeEventListener('play', () => audioRef.current?.play());
-      video?.removeEventListener('pause', () => audioRef.current?.pause());
+      video?.removeEventListener('play', onPlay);
+      video?.removeEventListener('pause', onPause);
+      video?.removeEventListener('timeupdate', onTimeUpdate);
     };
   }, []);
 
@@ -67,7 +72,6 @@ export default function Home() {
             loop
             muted={false}
             playsInline
-            onLoop={handleLoop}
             className="absolute top-1/2 left-1/2 min-w-full min-h-full -translate-x-1/2 -translate-y-1/2 object-cover"
           >
             <source src={heroVideo} type="video/mp4" />
