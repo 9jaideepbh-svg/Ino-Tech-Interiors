@@ -4,11 +4,35 @@ import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { ProjectCard } from "@/components/ProjectCard";
 import { useProjects } from "@/hooks/use-projects";
+import { useRef, useEffect } from "react";
 import heroVideo from "@assets/133077-755975090_medium_1770457772693.mp4";
+import heroAudio from "@assets/The_Sevastopol-[AudioTrimmer.com]_1770715872124.mp3";
 
 export default function Home() {
   const { data: projects, isLoading } = useProjects();
-  
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const audioRef = useRef<HTMLAudioElement>(null);
+
+  const handleLoop = () => {
+    if (audioRef.current) {
+      audioRef.current.currentTime = 0;
+      audioRef.current.play();
+    }
+  };
+
+  useEffect(() => {
+    // Synchronize play/pause
+    const video = videoRef.current;
+    if (video) {
+      video.addEventListener('play', () => audioRef.current?.play());
+      video.addEventListener('pause', () => audioRef.current?.pause());
+    }
+    return () => {
+      video?.removeEventListener('play', () => audioRef.current?.play());
+      video?.removeEventListener('pause', () => audioRef.current?.pause());
+    };
+  }, []);
+
   // Filter for featured projects or just take the first few if none marked featured
   const featuredProjects = projects 
     ? projects.filter(p => p.featured).slice(0, 3) 
@@ -38,14 +62,17 @@ export default function Home() {
         {/* Cinematic Video Background with 3D Wash */}
         <div className="absolute inset-0 z-0">
           <video
+            ref={videoRef}
             autoPlay
             loop
-            muted
+            muted={false}
             playsInline
+            onLoop={handleLoop}
             className="absolute top-1/2 left-1/2 min-w-full min-h-full -translate-x-1/2 -translate-y-1/2 object-cover"
           >
             <source src={heroVideo} type="video/mp4" />
           </video>
+          <audio ref={audioRef} src={heroAudio} loop />
           {/* Minimal 3D Wash for Maximum Brightness */}
           <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/40 backdrop-blur-[0.2px]" />
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.1)_100%)]" />
