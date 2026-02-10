@@ -1,10 +1,10 @@
-import { motion } from "framer-motion";
-import { ArrowRight, CheckCircle2, Building2, Users, Trophy, ChevronRight } from "lucide-react";
+import { motion, useScroll, useTransform } from "framer-motion";
+import { ArrowRight, CheckCircle2, Building2, Users, Trophy, ChevronRight, Volume2, VolumeX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { ProjectCard } from "@/components/ProjectCard";
 import { useProjects } from "@/hooks/use-projects";
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 import heroVideo from "@assets/133077-755975090_medium_1770457772693.mp4";
 import heroAudio from "@assets/The_Sevastopol-[AudioTrimmer.com]_1770715872124.mp3";
 
@@ -12,6 +12,34 @@ export default function Home() {
   const { data: projects, isLoading } = useProjects();
   const videoRef = useRef<HTMLVideoElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
+  const heroRef = useRef<HTMLDivElement>(null);
+  const [isMuted, setIsMuted] = useState(true);
+
+  const { scrollYProgress } = useScroll({
+    target: heroRef,
+    offset: ["start start", "end start"]
+  });
+
+  const audioVolume = useTransform(scrollYProgress, [0.8, 1], [1, 0]);
+
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.muted = isMuted;
+    }
+  }, [isMuted]);
+
+  useEffect(() => {
+    const unsubscribe = audioVolume.onChange((v) => {
+      if (audioRef.current) {
+        if (v <= 0) {
+          audioRef.current.pause();
+        } else if (!isMuted && videoRef.current && !videoRef.current.paused) {
+          audioRef.current.play();
+        }
+      }
+    });
+    return () => unsubscribe();
+  }, [audioVolume, isMuted]);
 
   useEffect(() => {
     // Synchronize play/pause and looping
@@ -63,24 +91,40 @@ export default function Home() {
   return (
     <div className="min-h-screen">
       {/* Hero Section with Cinematic 3D Video Wash */}
-      <section className="relative h-screen min-h-[600px] flex items-center overflow-hidden">
+      <section ref={heroRef} className="relative h-screen min-h-[600px] flex items-center overflow-hidden">
         {/* Cinematic Video Background with 3D Wash */}
         <div className="absolute inset-0 z-0">
           <video
             ref={videoRef}
             autoPlay
             loop
-            muted={false}
+            muted={isMuted}
             playsInline
             className="absolute top-1/2 left-1/2 min-w-full min-h-full -translate-x-1/2 -translate-y-1/2 object-cover"
           >
             <source src={heroVideo} type="video/mp4" />
           </video>
-          <audio ref={audioRef} src={heroAudio} loop />
+          <audio ref={audioRef} src={heroAudio} loop muted={isMuted} />
           {/* Minimal 3D Wash for Maximum Brightness */}
           <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/40 backdrop-blur-[0.2px]" />
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.1)_100%)]" />
           
+          {/* Mute Toggle Button */}
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="absolute bottom-8 right-8 z-20"
+          >
+            <Button
+              size="icon"
+              variant="outline"
+              onClick={() => setIsMuted(!isMuted)}
+              className="rounded-full w-12 h-12 border-white/20 bg-black/20 backdrop-blur-md text-white hover:bg-white/10 hover:border-white/40"
+            >
+              {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
+            </Button>
+          </motion.div>
+
           {/* Animated Glass Shapes for 3D depth effect */}
           <motion.div 
             animate={{ 
