@@ -1,6 +1,8 @@
 import { Link } from "wouter";
 import { Phone, Mail, MapPin, Instagram, Facebook, Linkedin } from "lucide-react";
 
+import logoImg from "@assets/ChatGPT_Image_Jan_22,_2026,_03_05_31_PM_1771090135657.png";
+
 export function Footer() {
   return (
     <footer className="bg-[#432818] text-[#FFE6A7] pt-16 pb-8">
@@ -8,23 +10,17 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
           {/* Brand */}
           <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <div className="w-10 h-10 bg-gradient-to-br from-[#6F1D1B] to-[#BB9457] rounded-lg flex items-center justify-center shadow-lg">
-                <span className="text-white font-serif font-bold text-xl">I</span>
-              </div>
+            <Link href="/" className="flex items-center gap-2 group">
+              <img src={logoImg} alt="Inotech Logo" className="w-12 h-12 object-contain" />
               <span className="font-display font-bold text-2xl tracking-tight text-white">
                 INOTECH <span className="text-[#BB9457]">Interiors</span>
               </span>
-            </div>
+            </Link>
             <p className="text-[#FFE6A7]/80 leading-relaxed max-w-xs">
               Excellence in structural glazing and modern facade solutions for over 20 years. We shape skylines with precision and elegance.
             </p>
             <div className="flex gap-4 pt-2">
-              {[Instagram, Facebook, Linkedin].map((Icon, i) => (
-                <a key={i} href="#" className="p-2 rounded-full bg-white/5 hover:bg-[#BB9457] hover:text-white transition-all duration-300">
-                  <Icon className="w-5 h-5" />
-                </a>
-              ))}
+              <img src={logoImg} alt="Inotech Logo" className="w-24 h-auto object-contain" />
             </div>
           </div>
 

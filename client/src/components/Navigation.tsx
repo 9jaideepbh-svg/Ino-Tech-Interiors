@@ -5,6 +5,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
+import logoImg from "@assets/ChatGPT_Image_Jan_22,_2026,_03_05_31_PM_1771090135657.png";
+
 export function Navigation() {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -35,10 +37,7 @@ export function Navigation() {
       <div className="container mx-auto px-4 md:px-6">
         <div className="flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2 group">
-             {/* Logo Placeholder - would be an image in production */}
-            <div className="w-10 h-10 bg-gradient-to-br from-primary to-secondary rounded-lg flex items-center justify-center shadow-lg group-hover:shadow-primary/30 transition-all">
-              <span className="text-white font-serif font-bold text-xl">I</span>
-            </div>
+            <img src={logoImg} alt="Inotech Logo" className="w-12 h-12 object-contain" />
             <span className={cn(
               "font-display font-bold text-xl md:text-2xl tracking-tight transition-colors",
               scrolled ? "text-primary" : "text-primary md:text-white"
