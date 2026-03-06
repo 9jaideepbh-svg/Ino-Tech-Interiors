@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { motion } from "framer-motion";
 import buildingImg from "@assets/20180309_175550_1772781756286.jpg";
+import cmHouseImg from "@assets/IMG_20260306_091320_1772782464446.jpg";
 
 export default function ProjectDetail() {
   const [, params] = useRoute("/projects/:id");
@@ -31,9 +32,15 @@ export default function ProjectDetail() {
   }
 
   const isCityCivilCourt = project.title === "City Civil Court";
-  const displayImage = isCityCivilCourt ? buildingImg : project.imageUrl;
+  const isCMHouse = project.title === "Chief Minister Residential House";
+  
+  const displayImage = isCityCivilCourt 
+    ? buildingImg 
+    : isCMHouse 
+      ? cmHouseImg 
+      : project.imageUrl;
 
-  if (isCityCivilCourt) {
+  if (isCityCivilCourt || isCMHouse) {
     return (
       <div className="min-h-screen bg-black flex flex-col">
         <div className="p-4 flex items-center justify-between z-50">

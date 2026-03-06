@@ -1,8 +1,9 @@
 import { Project } from "@shared/schema";
 import { motion } from "framer-motion";
 import { ArrowUpRight, MapPin } from "lucide-react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import buildingImg from "@assets/20180309_175550_1772781756286.jpg";
+import cmHouseImg from "@assets/IMG_20260306_091320_1772782464446.jpg";
 
 interface ProjectCardProps {
   project: Project;
@@ -10,8 +11,19 @@ interface ProjectCardProps {
 }
 
 export function ProjectCard({ project, index }: ProjectCardProps) {
+  const [, setLocation] = useLocation();
   const isCityCivilCourt = project.title === "City Civil Court";
-  const displayImage = isCityCivilCourt ? buildingImg : project.imageUrl;
+  const isCMHouse = project.title === "Chief Minister Residential House";
+  
+  const displayImage = isCityCivilCourt 
+    ? buildingImg 
+    : isCMHouse 
+      ? cmHouseImg 
+      : project.imageUrl;
+
+  const handleCardClick = () => {
+    setLocation(`/projects/${project.id}`);
+  };
 
   return (
     <motion.div
@@ -19,7 +31,8 @@ export function ProjectCard({ project, index }: ProjectCardProps) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.1, duration: 0.5 }}
       whileHover={{ y: -5 }}
-      className="group relative bg-card rounded-xl overflow-hidden shadow-lg hover:shadow-2xl border border-border/10 transition-all duration-300 h-full flex flex-col"
+      onClick={handleCardClick}
+      className="group relative bg-card rounded-xl overflow-hidden shadow-lg hover:shadow-2xl border border-border/10 transition-all duration-300 h-full flex flex-col cursor-pointer"
     >
       {/* Image Container */}
       <div className="relative h-64 overflow-hidden">
@@ -53,9 +66,9 @@ export function ProjectCard({ project, index }: ProjectCardProps) {
           {project.description}
         </p>
 
-        <Link href={`/projects/${project.id}`} className="inline-flex items-center gap-2 text-primary font-semibold text-sm group-hover:underline decoration-secondary underline-offset-4 mt-auto">
+        <div className="inline-flex items-center gap-2 text-primary font-semibold text-sm group-hover:underline decoration-secondary underline-offset-4 mt-auto">
           View Details <ArrowUpRight className="w-4 h-4 transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
-        </Link>
+        </div>
       </div>
     </motion.div>
   );
