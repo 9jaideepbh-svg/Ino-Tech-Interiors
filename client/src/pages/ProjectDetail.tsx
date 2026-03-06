@@ -4,6 +4,7 @@ import { Loader2, ArrowLeft, MapPin, Calendar, CheckCircle2 } from "lucide-react
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { motion } from "framer-motion";
+import buildingImg from "@assets/20180309_175550_1772781756286.jpg";
 
 export default function ProjectDetail() {
   const [, params] = useRoute("/projects/:id");
@@ -29,13 +30,41 @@ export default function ProjectDetail() {
     );
   }
 
+  const isCityCivilCourt = project.title === "City Civil Court";
+  const displayImage = isCityCivilCourt ? buildingImg : project.imageUrl;
+
+  if (isCityCivilCourt) {
+    return (
+      <div className="min-h-screen bg-black flex flex-col">
+        <div className="p-4 flex items-center justify-between z-50">
+          <Link href="/projects">
+            <Button variant="ghost" className="text-white hover:bg-white/10">
+              <ArrowLeft className="mr-2 h-4 w-4" /> Back to Projects
+            </Button>
+          </Link>
+          <h1 className="text-white font-display font-bold text-xl">{project.title}</h1>
+          <div className="w-24" /> {/* Spacer */}
+        </div>
+        <div className="flex-grow flex items-center justify-center p-4">
+          <motion.img
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            src={displayImage}
+            alt={project.title}
+            className="max-w-full max-h-[85vh] object-contain shadow-2xl rounded-lg"
+          />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background pb-20">
       {/* Header Image */}
       <div className="relative h-[60vh] min-h-[400px]">
         <div className="absolute inset-0 bg-black/40 z-10" />
         <img 
-          src={project.imageUrl} 
+          src={displayImage} 
           alt={project.title} 
           className="w-full h-full object-cover"
         />
