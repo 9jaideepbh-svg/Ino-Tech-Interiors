@@ -2,6 +2,7 @@ import { Project } from "@shared/schema";
 import { motion } from "framer-motion";
 import { ArrowUpRight, MapPin } from "lucide-react";
 import { Link } from "wouter";
+import buildingImg from "@assets/20180309_175550_1772781756286.jpg";
 
 interface ProjectCardProps {
   project: Project;
@@ -21,7 +22,7 @@ export function ProjectCard({ project, index }: ProjectCardProps) {
       <div className="relative h-64 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-60 z-10 group-hover:opacity-40 transition-opacity duration-300" />
         <img
-          src={project.imageUrl}
+          src={buildingImg}
           alt={project.title}
           className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700 ease-in-out"
         />
