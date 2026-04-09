@@ -45,6 +45,29 @@
   --font-body: 'Lato', sans-serif;
 }
 
+.dark {
+  --background: 20 14.3% 4.1%;
+  --foreground: 0 0% 95%;
+  --card: 24 9.8% 10%;
+  --card-foreground: 0 0% 95%;
+  --popover: 0 0% 9%;
+  --popover-foreground: 0 0% 95%;
+  --primary: 358 59% 50%; /* Lighter red for dark mode */
+  --primary-foreground: 0 0% 100%;
+  --secondary: 37 44% 60%; /* Lighter secondary */
+  --secondary-foreground: 0 0% 10%;
+  --muted: 0 0% 15%;
+  --muted-foreground: 240 5% 65%;
+  --accent: 25 57% 50%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 0 85.7% 97.3%;
+  --border: 240 3.7% 15.9%;
+  --input: 240 3.7% 15.9%;
+  --ring: 358 59% 50%;
+}
+
+
 @layer base {
   * {
     @apply border-border;

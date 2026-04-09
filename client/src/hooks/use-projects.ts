@@ -1,13 +1,46 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api, buildUrl, type InsertProject } from "@shared/routes";
 
+import { supabase } from "@/lib/supabase";
+
+function formatCategory(cat: string) {
+  if (cat === 'structural') return "Structural Glazing";
+  if (cat === 'acp') return "ACP Cladding";
+  if (cat === 'semi_unitized') return "Semi-Unitized Glazing";
+  if (cat === 'spider') return "Spider Glazing System";
+  return cat;
+}
+
 export function useProjects() {
   return useQuery({
     queryKey: [api.projects.list.path],
     queryFn: async () => {
+      // Fetch backend seed projects
       const res = await fetch(api.projects.list.path, { credentials: "include" });
       if (!res.ok) throw new Error("Failed to fetch projects");
-      return api.projects.list.responses[200].parse(await res.json());
+      const memoryProjects = api.projects.list.responses[200].parse(await res.json());
+
+      try {
+        // Automatically fetch live uploads directly from Supabase locally!
+        const { data, error } = await supabase.from('project_images').select('*').order('created_at', { ascending: false });
+        if (!error && data) {
+           const liveProjects = data.map((img: any) => ({
+             id: 10000 + img.id,
+             title: img.title || `Uploaded Project #${img.id}`,
+             description: `An exclusive ongoing project featuring ${formatCategory(img.category)}.`,
+             category: formatCategory(img.category),
+             imageUrl: img.image_url,
+             featured: false,
+             location: "Bangalore"
+           }));
+           // Show newest uploads FIRST, followed by static seed data
+           return [...liveProjects, ...memoryProjects];
+        }
+      } catch(e) {
+        console.error("Supabase live fetch failed:", e);
+      }
+      
+      return memoryProjects;
     },
   });
 }

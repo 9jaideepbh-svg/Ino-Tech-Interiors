@@ -9,8 +9,11 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, LogOut, Upload, Trash2 } from "lucide-react";
+import { Loader2, LogOut, Upload, Trash2, CheckCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { useQueryClient } from "@tanstack/react-query";
+import { api } from "@shared/routes";
 
 const loginSchema = z.object({
   email: z.string().email(),
@@ -25,8 +28,11 @@ export default function Admin() {
   const [session, setSession] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [stagedFiles, setStagedFiles] = useState<{file: File, preview: string, title: string, id: string}[]>([]);
   const [projects, setProjects] = useState<any[]>([]);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -79,35 +85,46 @@ export default function Admin() {
     await supabase.auth.signOut();
   }
 
-  async function onUpload(e: React.ChangeEvent<HTMLInputElement>) {
+  function onFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
+     if (!e.target.files) return;
+     const newFiles = Array.from(e.target.files).map(f => ({
+       file: f,
+       preview: URL.createObjectURL(f),
+       title: "",
+       id: Math.random().toString(36).substring(7)
+     }));
+     setStagedFiles(prev => [...prev, ...newFiles].slice(0, 10)); // max 10
+  }
+
+  async function submitBatch() {
     try {
       setUploading(true);
-      if (!e.target.files || e.target.files.length === 0) return;
-      
-      const file = e.target.files[0];
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Math.random()}.${fileExt}`;
-      const filePath = `projects/${fileName}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from('project-images')
-        .upload(filePath, file);
-
-      if (uploadError) throw uploadError;
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('project-images')
-        .getPublicUrl(filePath);
-
+      if (stagedFiles.length === 0) return;
       const category = projectForm.getValues("category");
 
-      const { error: dbError } = await supabase
-        .from('project_images')
-        .insert([{ image_url: publicUrl, category }]);
+      for (const sf of stagedFiles) {
+        const fileExt = sf.file.name.split('.').pop();
+        const fileName = `${Math.random()}.${fileExt}`;
+        const filePath = `projects/${fileName}`;
 
-      if (dbError) throw dbError;
+        const { error: uploadError } = await supabase.storage.from('project-images').upload(filePath, sf.file);
+        if (uploadError) throw uploadError;
 
-      toast({ title: "Success", description: "Image uploaded successfully" });
+        const { data: { publicUrl } } = supabase.storage.from('project-images').getPublicUrl(filePath);
+        const finalTitle = sf.title.trim() || 'Untitled Project';
+
+        const { error: dbError } = await supabase.from('project_images').insert([{ 
+          image_url: publicUrl, 
+          category,
+          title: finalTitle
+        }]);
+
+        if (dbError) throw dbError;
+      }
+
+      setShowSuccess(true);
+      setStagedFiles([]);
+      queryClient.invalidateQueries({ queryKey: [api.projects.list.path] });
       fetchProjects();
     } catch (error: any) {
       toast({ variant: "destructive", title: "Upload failed", description: error.message });
@@ -159,7 +176,7 @@ export default function Admin() {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Email</FormLabel>
-                          <FormControl><Input className="bg-neutral-800 border-neutral-700" {...field} /></FormControl>
+                          <FormControl><Input placeholder="admin@example.com" autoComplete="off" className="bg-neutral-800 border-neutral-700" {...field} /></FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -170,7 +187,7 @@ export default function Admin() {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Password</FormLabel>
-                          <FormControl><Input type="password" className="bg-neutral-800 border-neutral-700" {...field} /></FormControl>
+                          <FormControl><Input type="password" placeholder="••••••••" autoComplete="new-password" className="bg-neutral-800 border-neutral-700" {...field} /></FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -231,20 +248,66 @@ export default function Admin() {
                       <Input
                         type="file"
                         accept="image/*"
-                        onChange={onUpload}
-                        disabled={uploading}
+                        multiple
+                        onChange={onFileSelect}
+                        disabled={uploading || stagedFiles.length >= 10}
                         className="hidden"
                         id="image-upload"
                       />
                       <label 
                         htmlFor="image-upload"
-                        className="flex items-center justify-center w-full h-10 px-4 py-2 bg-secondary text-primary font-bold rounded-md cursor-pointer hover:bg-secondary/90 transition-colors"
+                        className={`flex items-center justify-center w-full h-10 px-4 py-2 font-bold rounded-md transition-colors ${stagedFiles.length >= 10 ? 'bg-neutral-800 text-neutral-500 cursor-not-allowed' : 'bg-neutral-800 text-white cursor-pointer hover:bg-neutral-700 border border-neutral-700 border-dashed'}`}
                       >
-                        {uploading ? <Loader2 className="animate-spin mr-2" /> : <Upload className="mr-2 h-4 w-4" />}
-                        {uploading ? "Uploading..." : "Choose & Upload Image"}
+                         <Upload className="mr-2 h-4 w-4" />
+                        Select Images (Max 10)
                       </label>
                     </div>
                   </div>
+
+                  {stagedFiles.length > 0 && (
+                    <div className="mt-8">
+                      <h4 className="text-secondary font-bold mb-4 flex justify-between items-center">
+                        Selected Files ({stagedFiles.length})
+                        <Button 
+                           type="button" 
+                           onClick={submitBatch} 
+                           disabled={uploading}
+                           className="bg-secondary text-primary hover:bg-secondary/90 font-bold"
+                        >
+                           {uploading ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : null}
+                           Upload Batch
+                        </Button>
+                      </h4>
+                      <div className="space-y-3 max-h-96 overflow-y-auto pr-2 rounded-lg">
+                        <AnimatePresence>
+                          {stagedFiles.map((sf, idx) => (
+                             <motion.div 
+                               initial={{ opacity: 0, x: -10 }} 
+                               animate={{ opacity: 1, x: 0 }} 
+                               exit={{ opacity: 0, height: 0 }}
+                               key={sf.id} 
+                               className="flex gap-4 p-3 border border-neutral-800 rounded-lg items-center bg-neutral-900/50"
+                             >
+                               <img src={sf.preview} className="w-16 h-16 object-cover rounded-md border border-neutral-800" alt="Preview"/>
+                               <Input 
+                                 placeholder="Enter a unique title for this project image..." 
+                                 value={sf.title}
+                                 onChange={e => {
+                                    const newFiles = [...stagedFiles];
+                                    newFiles[idx].title = e.target.value;
+                                    setStagedFiles(newFiles);
+                                 }}
+                                 className="flex-grow bg-neutral-950 border-neutral-800 text-white"
+                               />
+                               <Button size="icon" variant="destructive" onClick={() => setStagedFiles(stagedFiles.filter(f => f.id !== sf.id))}>
+                                  <Trash2 className="w-4 h-4" />
+                               </Button>
+                             </motion.div>
+                          ))}
+                        </AnimatePresence>
+                      </div>
+                    </div>
+                  )}
                 </Form>
               </CardContent>
             </Card>
@@ -279,6 +342,34 @@ export default function Admin() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <Dialog open={showSuccess} onOpenChange={(open) => {
+         if (!open) {
+            setShowSuccess(false);
+            handleLogout(); 
+         }
+      }}>
+        <DialogContent className="sm:max-w-md bg-neutral-900 border-neutral-800 text-white flex flex-col items-center p-12 shadow-2xl">
+          <motion.div 
+            initial={{ scale: 0, rotate: -45 }} 
+            animate={{ scale: 1, rotate: 0 }} 
+            transition={{ type: "spring", bounce: 0.5, duration: 0.6 }}
+            className="rounded-full bg-green-500/10 p-6 mb-6"
+          >
+             <CheckCircle className="w-24 h-24 text-green-500" />
+          </motion.div>
+          <h2 className="text-3xl font-display font-bold mb-3 text-white text-center">Batch Upload Complete!</h2>
+          <p className="text-neutral-400 text-center mb-8">
+            Your images have been beautifully cataloged and published to the live platform. For security purposes, you will now be securely logged out.
+          </p>
+          <Button 
+            onClick={() => { setShowSuccess(false); handleLogout(); }} 
+            className="w-full bg-secondary text-primary font-bold hover:bg-secondary/90 h-12 text-lg"
+          >
+            Complete Session
+          </Button>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

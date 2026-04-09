@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
+import { BackgroundPaths } from "@/components/ui/background-paths";
 
 export default function Contact() {
   const { toast } = useToast();
@@ -26,8 +27,9 @@ export default function Contact() {
   };
 
   return (
-    <div className="min-h-screen bg-background pt-24 pb-20">
-      <div className="container mx-auto px-4">
+    <div className="dark min-h-screen relative overflow-hidden bg-background pt-24 pb-20">
+      <BackgroundPaths />
+      <div className="container relative z-10 mx-auto px-4">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
           {/* Contact Info */}
           <motion.div
@@ -82,12 +84,11 @@ export default function Contact() {
             </div>
           </motion.div>
 
-          {/* Contact Form */}
           <motion.div
             initial={{ opacity: 0, x: 30 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="bg-white rounded-2xl p-8 md:p-10 shadow-xl border border-border/10"
+            className="bg-card rounded-2xl p-8 md:p-10 shadow-xl border border-border/10 relative z-10 backdrop-blur-md"
           >
             <h3 className="text-2xl font-bold text-primary mb-6">Send us a message</h3>
             <form onSubmit={handleSubmit} className="space-y-6">
