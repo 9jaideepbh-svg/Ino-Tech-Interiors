@@ -4,3 +4,26 @@ dist
 server/public
 vite.config.ts.*
 *.tar.gz
+
+# Environment variables (contains API keys - never commit!)
+.env
+.env.local
+.env.*.local
+
+# Large media files
+client/public/*.webm
+
+# Personal notes & scratch files in public
+client/public/*.txt
+client/public/INOTECH LOGO
+client/public/WEB3FORM
+client/public/reference
+client/public/changes
+client/public/Prompt for Antigravity.txt
+client/public/chat gpt refwrence.txt
+client/public/image optimization.txt
+client/public/optimizations hero.txt
+client/public/I want you to perform a complete pe.txt
+
+# VS Code settings
+.vscode/

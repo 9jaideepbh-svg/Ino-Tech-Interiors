@@ -1,19 +1,26 @@
 import { motion } from "framer-motion";
 import { CheckCircle, Award, Target, Users } from "lucide-react";
+import { SEO } from "@/components/SEO";
+import { unsplashUrl } from "@/lib/cloudinary-utils";
 
 export default function About() {
   return (
-    <div className="min-h-screen bg-background pt-24 pb-20">
+    <div className="min-h-screen bg-background pt-20 sm:pt-24 pb-20">
+      <SEO
+        title="About Us | Inotech Interiors – 20+ Years of Facade Excellence"
+        description="Learn about Inotech Interiors – founded in 2004, we are Bangalore's trusted structural glazing and ACP cladding company with 20+ years of experience."
+        canonical="https://inotech-interiors.web.app/about"
+      />
       {/* Header */}
       <div className="container mx-auto px-4 mb-20">
         <div className="text-center max-w-4xl mx-auto">
-          <motion.h4 
+          <motion.p
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-secondary font-bold uppercase tracking-widest mb-2"
+            className="text-secondary font-bold uppercase tracking-widest mb-2 text-sm"
           >
             About Inotech Interiors
-          </motion.h4>
+          </motion.p>
           <motion.h1 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -41,10 +48,21 @@ export default function About() {
              whileInView={{ opacity: 1, x: 0 }}
              viewport={{ once: true }}
            >
-             <img 
-               src="https://images.unsplash.com/photo-1555636222-cae831e670b3?q=80&w=2077&auto=format&fit=crop" 
-               alt="Team working on construction" 
-               className="rounded-2xl shadow-2xl w-full object-cover h-[500px]"
+             <img
+               src={unsplashUrl("https://images.unsplash.com/photo-1555636222-cae831e670b3", 900)}
+               srcSet={[
+                 `${unsplashUrl("https://images.unsplash.com/photo-1555636222-cae831e670b3", 640)} 640w`,
+                 `${unsplashUrl("https://images.unsplash.com/photo-1555636222-cae831e670b3", 900)} 900w`,
+                 `${unsplashUrl("https://images.unsplash.com/photo-1555636222-cae831e670b3", 1200)} 1200w`,
+                 `${unsplashUrl("https://images.unsplash.com/photo-1555636222-cae831e670b3", 1800)} 1800w`,
+               ].join(", ")}
+               sizes="(max-width: 768px) 100vw, 50vw"
+               alt="Inotech Interiors team working on a construction project"
+               className="rounded-2xl shadow-2xl w-full object-cover h-[350px] sm:h-[450px] md:h-[500px]"
+               loading="lazy"
+               decoding="async"
+               width={900}
+               height={600}
              />
            </motion.div>
            

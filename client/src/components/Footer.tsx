@@ -1,7 +1,7 @@
 import { Link } from "wouter";
 import { Phone, Mail, MapPin, Instagram, Facebook, Linkedin } from "lucide-react";
 
-import logoImg from "@assets/ChatGPT_Image_Jan_22,_2026,_03_05_31_PM_1771090135657.png";
+import logoImg from "@assets/inotech-logo.webp";
 
 export function Footer() {
   return (
@@ -10,8 +10,12 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
           {/* Brand */}
           <div className="space-y-4">
-            <Link href="/" className="flex items-center gap-2 group">
-              <img src={logoImg} alt="Inotech Logo" className="w-12 h-12 object-contain" />
+            <Link href="/" className="flex items-center gap-3 group">
+              <img 
+                src={logoImg} 
+                alt="Inotech Logo" 
+                className="w-12 h-12 object-cover rounded-xl shadow-md border border-white/20 group-hover:scale-105 transition-transform duration-300" 
+              />
               <span className="font-display font-bold text-2xl tracking-tight text-white">
                 INOTECH <span className="text-[#BB9457]">Interiors</span>
               </span>
@@ -19,9 +23,6 @@ export function Footer() {
             <p className="text-[#FFE6A7]/80 leading-relaxed max-w-xs">
               Excellence in structural glazing and modern facade solutions for over 20 years. We shape skylines with precision and elegance.
             </p>
-            <div className="flex gap-4 pt-2">
-              <img src={logoImg} alt="Inotech Logo" className="w-24 h-auto object-contain" />
-            </div>
           </div>
 
           {/* Quick Links */}

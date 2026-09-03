@@ -1,13 +1,16 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// Project hooks – Firestore + Backend seed data
+// ─────────────────────────────────────────────────────────────────────────────
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { api, buildUrl, type InsertProject } from "@shared/routes";
-
-import { supabase } from "@/lib/supabase";
+import { api, buildUrl } from "@shared/routes";
+import { type InsertProject } from "@shared/schema";
+import { fetchAllProjects } from "@/lib/firestore-service";
 
 function formatCategory(cat: string) {
-  if (cat === 'structural') return "Structural Glazing";
-  if (cat === 'acp') return "ACP Cladding";
-  if (cat === 'semi_unitized') return "Semi-Unitized Glazing";
-  if (cat === 'spider') return "Spider Glazing System";
+  if (cat === "structural") return "Structural Glazing";
+  if (cat === "acp") return "ACP Cladding";
+  if (cat === "semi_unitized") return "Semi-Unitized Glazing";
+  if (cat === "spider") return "Spider Glazing System";
   return cat;
 }
 
@@ -21,25 +24,24 @@ export function useProjects() {
       const memoryProjects = api.projects.list.responses[200].parse(await res.json());
 
       try {
-        // Automatically fetch live uploads directly from Supabase locally!
-        const { data, error } = await supabase.from('project_images').select('*').order('created_at', { ascending: false });
-        if (!error && data) {
-           const liveProjects = data.map((img: any) => ({
-             id: 10000 + img.id,
-             title: img.title || `Uploaded Project #${img.id}`,
-             description: `An exclusive ongoing project featuring ${formatCategory(img.category)}.`,
-             category: formatCategory(img.category),
-             imageUrl: img.image_url,
-             featured: false,
-             location: "Bangalore"
-           }));
-           // Show newest uploads FIRST, followed by static seed data
-           return [...liveProjects, ...memoryProjects];
-        }
-      } catch(e) {
-        console.error("Supabase live fetch failed:", e);
+        // Fetch live uploads from Firestore
+        const data = await fetchAllProjects();
+        const liveProjects = data.map((img) => ({
+          id: parseInt(img.id.replace(/\D/g, "").slice(0, 8) || "0", 10) + 10000,
+          title: img.title || "Uploaded Project",
+          description: `An exclusive ongoing project featuring ${formatCategory(img.category)}.`,
+          category: formatCategory(img.category),
+          imageUrl: img.image_url,
+          featured: false,
+          location: img.location || "Bangalore",
+          firestoreId: img.id, // keep raw Firestore ID for deletes
+        }));
+        // Newest uploads first, then static seed data
+        return [...liveProjects, ...memoryProjects];
+      } catch (e) {
+        console.error("Firestore live fetch failed:", e);
       }
-      
+
       return memoryProjects;
     },
   });
@@ -68,7 +70,7 @@ export function useCreateProject() {
         body: JSON.stringify(data),
         credentials: "include",
       });
-      
+
       if (!res.ok) {
         if (res.status === 400) {
           const error = await res.json();
@@ -95,7 +97,7 @@ export function useUpdateProject() {
         body: JSON.stringify(updates),
         credentials: "include",
       });
-      
+
       if (!res.ok) throw new Error("Failed to update project");
       return api.projects.update.responses[200].parse(await res.json());
     },
@@ -114,7 +116,7 @@ export function useDeleteProject() {
         method: api.projects.delete.method,
         credentials: "include",
       });
-      
+
       if (!res.ok) throw new Error("Failed to delete project");
     },
     onSuccess: () => {

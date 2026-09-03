@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { categories } from "@shared/schema";
 import { Loader2 } from "lucide-react";
 import { useLocation } from "wouter";
+import { SEO } from "@/components/SEO";
 
 export default function Projects() {
   const { data: projects, isLoading } = useProjects();
@@ -25,7 +26,12 @@ export default function Projects() {
     : projects?.filter(p => p.category === activeCategory);
 
   return (
-    <div className="min-h-screen bg-background pt-24 pb-20">
+    <div className="min-h-screen bg-background pt-20 sm:pt-24 pb-20">
+      <SEO
+        title="Projects | Structural Glazing Portfolio – Inotech Interiors"
+        description="Browse Inotech Interiors' portfolio of structural glazing, ACP cladding, semi-unitized and spider glazing projects across Bangalore."
+        canonical="https://inotech-interiors.web.app/projects"
+      />
       <div className="container mx-auto px-4">
         <div className="text-center max-w-3xl mx-auto mb-16">
           <motion.div

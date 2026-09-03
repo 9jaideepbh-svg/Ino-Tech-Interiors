@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
-import logoImg from "@assets/ChatGPT_Image_Jan_22,_2026,_03_05_31_PM_1771090135657.png";
+import logoImg from "@assets/inotech-logo.webp";
 
 export function Navigation() {
   const [isOpen, setIsOpen] = useState(false);
@@ -31,16 +31,22 @@ export function Navigation() {
     <nav
       className={cn(
         "fixed top-0 w-full z-50 transition-all duration-300 border-b border-transparent",
-        scrolled ? "bg-white/90 backdrop-blur-md shadow-md border-border/20 py-3" : "bg-transparent py-6"
+        scrolled 
+          ? "bg-white/95 dark:bg-zinc-950/95 backdrop-blur-md shadow-md border-border/20 dark:border-white/10 py-2 md:py-3" 
+          : "bg-transparent py-3 md:py-6"
       )}
     >
       <div className="container mx-auto px-4 md:px-6">
         <div className="flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 group">
-            <img src={logoImg} alt="Inotech Logo" className="w-12 h-12 object-contain" />
+          <Link href="/" className="flex items-center gap-3 group">
+            <img 
+              src={logoImg} 
+              alt="Inotech Logo" 
+              className="w-10 h-10 md:w-12 md:h-12 object-cover rounded-lg shadow-sm border border-white/20 group-hover:scale-105 transition-transform duration-300" 
+            />
             <span className={cn(
-              "font-display font-bold text-xl md:text-2xl tracking-tight transition-colors",
-              scrolled ? "text-primary" : "text-primary md:text-white"
+              "font-display font-bold text-lg md:text-2xl tracking-tight transition-colors",
+              scrolled ? "text-primary dark:text-white" : "text-white"
             )}>
               INOTECH <span className="text-secondary">Interiors</span>
             </span>
@@ -56,7 +62,7 @@ export function Navigation() {
                   "text-sm font-medium transition-colors hover:text-secondary relative group",
                   location === link.href 
                     ? "text-secondary font-semibold" 
-                    : scrolled ? "text-foreground" : "text-white/90"
+                    : scrolled ? "text-foreground dark:text-white/90" : "text-white/90"
                 )}
               >
                 {link.label}
@@ -80,10 +86,18 @@ export function Navigation() {
 
           {/* Mobile Menu Toggle */}
           <button 
-            className="md:hidden p-2 text-primary"
+            className={cn(
+              "md:hidden p-2 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-secondary/40", 
+              scrolled ? "text-[#6F1D1B] hover:bg-black/5" : "text-white hover:bg-white/10"
+            )}
             onClick={() => setIsOpen(!isOpen)}
+            aria-label="Toggle menu"
           >
-            {isOpen ? <X /> : <Menu />}
+            {isOpen ? (
+              <X className={cn("w-6 h-6 stroke-[2.5] opacity-100", scrolled ? "text-[#6F1D1B]" : "text-white")} />
+            ) : (
+              <Menu className={cn("w-6 h-6 stroke-[2.5] opacity-100", scrolled ? "text-[#6F1D1B]" : "text-white")} />
+            )}
           </button>
         </div>
       </div>
@@ -95,7 +109,7 @@ export function Navigation() {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            className="md:hidden bg-background border-b border-border/20 overflow-hidden"
+            className="md:hidden bg-background/95 dark:bg-zinc-950/95 backdrop-blur-xl border-b border-border/20 dark:border-white/10 overflow-hidden shadow-2xl"
           >
             <div className="container px-4 py-6 flex flex-col gap-4">
               {links.map((link) => (
@@ -104,18 +118,18 @@ export function Navigation() {
                   href={link.href}
                   onClick={() => setIsOpen(false)}
                   className={cn(
-                    "text-lg font-medium p-2 rounded-md transition-colors",
+                    "text-lg font-medium p-2.5 rounded-lg transition-colors",
                     location === link.href 
-                      ? "bg-secondary/10 text-secondary" 
-                      : "text-foreground hover:bg-muted"
+                      ? "bg-secondary/15 text-secondary font-semibold" 
+                      : "text-foreground dark:text-white hover:bg-muted dark:hover:bg-white/10"
                   )}
                 >
                   {link.label}
                 </Link>
               ))}
-              <div className="h-px bg-border/20 my-2" />
+              <div className="h-px bg-border/20 dark:bg-white/10 my-2" />
               <a href="tel:9845284778" className="w-full">
-                <Button className="w-full bg-primary text-white">Call Us Now</Button>
+                <Button className="w-full bg-primary hover:bg-primary/90 text-white rounded-full py-6 font-bold shadow-lg">Call Us Now</Button>
               </a>
             </div>
           </motion.div>

@@ -6,6 +6,7 @@ import { Link } from "wouter";
 import { motion } from "framer-motion";
 import buildingImg from "@assets/20180309_175550_1772781756286.jpg";
 import cmHouseImg from "@assets/IMG_20260306_091320_1772782464446.jpg";
+import { optimizeImage } from "@/lib/cloudinary-utils";
 
 export default function ProjectDetail() {
   const [, params] = useRoute("/projects/:id");
@@ -59,6 +60,7 @@ export default function ProjectDetail() {
             src={displayImage}
             alt={project.title}
             className="max-w-full max-h-[85vh] object-contain shadow-2xl rounded-lg"
+            decoding="async"
           />
         </div>
       </div>
@@ -67,14 +69,29 @@ export default function ProjectDetail() {
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      {/* Header Image */}
+      {/* Header Image — first visible content, fetch at highest priority */}
       <div className="relative h-[60vh] min-h-[400px]">
         <div className="absolute inset-0 bg-black/40 z-10" />
-        <img 
-          src={displayImage} 
-          alt={project.title} 
-          className="w-full h-full object-cover"
-        />
+        {(() => {
+          const img = optimizeImage(displayImage, {
+            width: 1400,
+            height: 600,
+            sizes: "100vw",
+          });
+          return (
+            <img
+              src={img.src}
+              srcSet={img.srcSet}
+              sizes={img.sizes || "100vw"}
+              alt={project.title}
+              className="w-full h-full object-cover"
+              fetchPriority="high"
+              decoding="async"
+              width={1400}
+              height={600}
+            />
+          );
+        })()}
         <div className="absolute inset-0 z-20 flex items-center justify-center">
           <div className="container mx-auto px-4">
             <motion.div

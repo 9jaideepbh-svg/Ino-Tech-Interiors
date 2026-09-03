@@ -62,6 +62,42 @@ export async function registerRoutes(
     res.status(204).send();
   });
 
+  // Web3Forms API endpoint proxy
+  app.post("/api/contact", async (req, res) => {
+    try {
+      const { name, email, phone, message } = req.body;
+      if (!name || !email || !phone || !message) {
+        return res.status(400).json({ success: false, message: "Please fill out all required fields." });
+      }
+
+      const response = await fetch("https://api.web3forms.com/submit", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+        },
+        body: JSON.stringify({
+          access_key: "5b66c193-553b-4c2a-ba73-7f80f22c393b",
+          subject: "New Contact Inquiry - INOTECH Interiors",
+          from_name: "Inotech Interiors Website",
+          name,
+          email,
+          phone,
+          message,
+        }),
+      });
+
+      const data = await response.json();
+      return res.json(data);
+    } catch (err: any) {
+      console.error("Web3Forms Submission Error:", err);
+      return res.status(500).json({
+        success: false,
+        message: err.message || "Failed to submit message to server.",
+      });
+    }
+  });
+
   // Seed data function
   await seedDatabase();
 

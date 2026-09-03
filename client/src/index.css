@@ -1,48 +1,52 @@
-@import url('https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap');
+/* ──────────────────────────────────────────────
+   INOTECH Interiors – Global Stylesheet
+   - Font display swap to prevent invisible text
+   - GPU-accelerated animations
+   - Reduced motion support
+   - Scrollbar styling
+   - Utility classes
+──────────────────────────────────────────────── */
+
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Lato:wght@300;400;700&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  /* HSL Conversions for the palette */
-  /* #6F1D1B -> 358 59% 27% */
-  --primary: 358 59% 27%;
+  /* Palette — HSL */
+  --primary: 358 59% 27%;        /* #6F1D1B */
   --primary-foreground: 40 100% 97%;
 
-  /* #BB9457 -> 37 44% 54% */
-  --secondary: 37 44% 54%;
+  --secondary: 37 44% 54%;       /* #BB9457 */
   --secondary-foreground: 20 25% 15%;
 
-  /* #432818 -> 22 47% 18% */
-  --tertiary: 22 47% 18%;
+  --tertiary: 22 47% 18%;        /* #432818 */
   --tertiary-foreground: 40 100% 97%;
 
-  /* #99582A -> 25 57% 38% */
-  --accent: 25 57% 38%;
+  --accent: 25 57% 38%;          /* #99582A */
   --accent-foreground: 40 100% 97%;
 
-  /* #FFE6A7 -> 43 100% 83% */
-  --muted: 43 100% 83%;
+  --muted: 43 100% 83%;          /* #FFE6A7 */
   --muted-foreground: 22 47% 25%;
 
-  --background: 40 30% 98%; /* Light cream background */
-  --foreground: 22 47% 18%; /* Dark brown text */
-  
+  --background: 40 30% 98%;
+  --foreground: 22 47% 18%;
+
   --card: 0 0% 100%;
   --card-foreground: 22 47% 18%;
-  
+
   --popover: 0 0% 100%;
   --popover-foreground: 22 47% 18%;
-  
-  --border: 37 44% 54%; /* Gold borders */
+
+  --border: 37 44% 54%;
   --input: 37 44% 85%;
-  --ring: 358 59% 27%;
-  
+  --ring: 37 44% 54%;
+
   --radius: 0.5rem;
 
-  --font-display: 'Playfair Display', serif;
-  --font-body: 'Lato', sans-serif;
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-body: 'Lato', system-ui, sans-serif;
 }
 
 .dark {
@@ -52,9 +56,9 @@
   --card-foreground: 0 0% 95%;
   --popover: 0 0% 9%;
   --popover-foreground: 0 0% 95%;
-  --primary: 358 59% 50%; /* Lighter red for dark mode */
+  --primary: 358 59% 50%;
   --primary-foreground: 0 0% 100%;
-  --secondary: 37 44% 60%; /* Lighter secondary */
+  --secondary: 37 44% 60%;
   --secondary-foreground: 0 0% 10%;
   --muted: 0 0% 15%;
   --muted-foreground: 240 5% 65%;
@@ -64,47 +68,90 @@
   --destructive-foreground: 0 85.7% 97.3%;
   --border: 240 3.7% 15.9%;
   --input: 240 3.7% 15.9%;
-  --ring: 358 59% 50%;
+  --ring: 37 44% 60%;
 }
 
-
+/* ── Base layer ── */
 @layer base {
-  * {
+  *, *::before, *::after {
     @apply border-border;
+    box-sizing: border-box;
   }
+
+  html {
+    scroll-behavior: smooth;
+    /* Prevent horizontal scroll on all viewports */
+    overflow-x: hidden;
+  }
+
   body {
     @apply bg-background text-foreground antialiased selection:bg-secondary selection:text-white;
     font-family: var(--font-body);
+    /* Prevent iOS font-size inflation */
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    overflow-x: hidden;
   }
+
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-display);
     @apply font-bold tracking-tight text-primary;
+    /* Prevent layout thrash from font swap */
+    font-display: swap;
+  }
+
+  /* Prevent invisible text during font load */
+  @font-face {
+    font-display: swap;
+  }
+
+  /* Images: prevent layout shift, GPU decode */
+  img {
+    max-width: 100%;
+    height: auto;
+    display: block;
   }
 }
 
-/* Custom Scrollbar */
-::-webkit-scrollbar {
-  width: 10px;
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: hsl(var(--muted)); }
+::-webkit-scrollbar-thumb { background: hsl(var(--secondary)); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: hsl(var(--primary)); }
+
+/* ── GPU acceleration for animated elements ── */
+.transform-gpu {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  perspective: 1000px;
 }
 
-::-webkit-scrollbar-track {
-  background: hsl(var(--muted)); 
-}
- 
-::-webkit-scrollbar-thumb {
-  background: hsl(var(--secondary)); 
-  border-radius: 5px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: hsl(var(--primary)); 
-}
-
-/* Glassmorphism utility */
+/* ── Glassmorphism utility ── */
 .glass-panel {
   @apply bg-white/80 backdrop-blur-md border border-white/20 shadow-xl;
 }
 
 .text-gradient-gold {
   @apply bg-clip-text text-transparent bg-gradient-to-r from-[hsl(var(--secondary))] to-[hsl(var(--accent))];
+}
+
+/* ── Reduced-motion: respect user preferences ── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ── Mobile: ensure no horizontal overflow at any breakpoint ── */
+@media (max-width: 430px) {
+  .container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
 }
