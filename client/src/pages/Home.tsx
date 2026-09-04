@@ -360,7 +360,7 @@ export default function Home() {
                   sizes="(max-width: 768px) 100vw, 50vw"
                   alt="Modern architectural facade in Bangalore by Inotech Interiors"
                   className="w-full h-[350px] sm:h-[450px] md:h-[500px] object-cover"
-                  fetchPriority="high"
+                  loading="lazy"
                   decoding="async"
                   width={900}
                   height={600}

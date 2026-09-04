@@ -85,25 +85,36 @@ app.use((req, res, next) => {
     await setupVite(httpServer, app);
   }
 
-  const port = parseInt(process.env.PORT || "5000", 10);
+  const initialPort = parseInt(process.env.PORT || "5000", 10);
   const host = process.env.HOST || "0.0.0.0";
 
-  httpServer.on("error", (err: any) => {
-    if (err.code === "EADDRINUSE") {
-      console.error(`Port ${port} is already in use. Please stop the running process on port ${port} or set a different PORT.`);
-      process.exit(1);
-    } else {
-      console.error("Server error:", err);
-    }
-  });
+  const startServer = (port: number) => {
+    const onListening = () => {
+      httpServer.removeListener("error", onError);
+      log(`Server running successfully!`);
+      console.log(`\n  \x1b[32m➜\x1b[0m  \x1b[1mLocal\x1b[0m:   \x1b[36mhttp://localhost:${port}\x1b[0m`);
+      console.log(`  \x1b[32m➜\x1b[0m  \x1b[1mNetwork\x1b[0m: \x1b[36mhttp://127.0.0.1:${port}\x1b[0m\n`);
+    };
 
-  httpServer.listen(
-    {
-      port,
-      host,
-    },
-    () => {
-      log(`serving on http://localhost:${port} (and http://127.0.0.1:${port})`);
-    },
-  );
+    const onError = (err: any) => {
+      httpServer.removeListener("listening", onListening);
+      if (err.code === "EADDRINUSE") {
+        if (!process.env.PORT && port < initialPort + 10) {
+          log(`Port ${port} is in use, trying port ${port + 1}...`);
+          startServer(port + 1);
+        } else {
+          console.error(`Port ${port} is already in use. Please stop the running process on port ${port} or set a different PORT.`);
+          process.exit(1);
+        }
+      } else {
+        console.error("Server error:", err);
+      }
+    };
+
+    httpServer.once("error", onError);
+    httpServer.once("listening", onListening);
+    httpServer.listen({ port, host });
+  };
+
+  startServer(initialPort);
 })();
